@@ -25,13 +25,23 @@ Setup
              	      'sweep': True
                     },
 ```
+However, to keep the TINA Connector invisible in Smart Connectors list
+```
+        'tina':  {'init': 'chiminey.tinaconnector.initialise.TinaInitial',
+                      'name': 'tina',
+                      'description': 'The TINA Model Checker',
+                      'payload': '/opt/chiminey/current/chiminey/tinaconnector/payload_tina',
+                      'sweep': True,
+                      'hide_config': True
+                    },
+```
 6. Modify the INPUT_FIELDS dictionary in settings_change.py file to have following:
 ```
 	'tina':  SCHEMA_PREFIX + "/input/tina",
 ```
-7. Clone the git repository https://github.com/al-ahmedabdullah/tinaconnector.git in /opt/chiminey/current/chiminey
+7. Clone the git repository https://github.com/alahmedabdullah/tinaconnector.git in /opt/chiminey/current/chiminey
 ```
-	$ git clone https://github.com/al-ahmedabdullah/tinaconnector.git
+	$ git clone https://github.com/alahmedabdullah/tinaconnector.git
 ```
 8. Change ownership of the newly created uppalconnector directory
 ```

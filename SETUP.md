@@ -21,18 +21,7 @@ Setup
 	'tina':  {'init': 'chiminey.tinaconnector.initialise.TinaInitial',
              	      'name': 'tina',
             	      'description': 'The TINA Model Checker',
-             	      'payload': '/opt/chiminey/current/chiminey/tinaconnector/payload_tina',
-             	      'sweep': True
-                    },
-```
-However, to keep the TINA Connector invisible in Smart Connectors list
-```
-        'tina':  {'init': 'chiminey.tinaconnector.initialise.TinaInitial',
-                      'name': 'tina',
-                      'description': 'The TINA Model Checker',
-                      'payload': '/opt/chiminey/current/chiminey/tinaconnector/payload_tina',
-                      'sweep': True,
-                      'hide_config': True
+             	      'payload': '/opt/chiminey/current/chiminey/tinaconnector/payload_tina'
                     },
 ```
 6. Modify the INPUT_FIELDS dictionary in settings_change.py file to have following:

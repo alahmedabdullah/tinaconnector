@@ -90,7 +90,7 @@ class TinaInitial(CoreInitial):
         schema_data =  [u'Tina Smart Connector',
              {
                  u'internal_sweep_map': {'type': models.ParameterName.STRING, 'subtype': 'jsondict',
-                                'description': 'Internal sweep map', 'ranking': 60, 'initial': '{}',
+                                'description': 'Payload parameter sweep', 'ranking': 60, 'initial': '{}',
                                 'help_text': 'Dictionary of values to sweep over, e.g {"var1":[3,7],"var2":[1,2]} would result in 4 Jobs:[3,1][3,2][7,1][7,2](JSON Dictionary)'},
 
              }

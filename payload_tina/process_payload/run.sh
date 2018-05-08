@@ -7,5 +7,10 @@ find $INPUT_DIR -name '*.zip' -exec sh -c 'unzip -d `dirname {}` {}' ';'
 
 tina_exe=$(find /opt -name 'tina' 2>&1)
 
-$tina_exe {{param_string}} $INPUT_DIR/{{tina_model}} $OUTPUT_DIR/outfile $OUTPUT_DIR/digestfile $OUTPUT_DIR/errorfile
+cd $INPUT_DIR
+
+$tina_exe $(cat cli_parameters.txt) &> ../$OUTPUT_DIR/outfile ../$OUTPUT_DIR/digestfile ../$OUTPUT_DIR/errorfile
+
+
+cp ./*.txt ../$OUTPUT_DIR
 # --- EOF ---

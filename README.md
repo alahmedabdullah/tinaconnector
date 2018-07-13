@@ -15,7 +15,9 @@ payload_tina/
 |--- bootstrap.sh
 |--- process_payload
 |    |---main.sh
+|    |---run.sh
 ```
+
 The TINA SC needs to install TINA binary. During activation of TINA SC, the user is required to download appropriate version of tina and place in the 'package'(https://github.com/alahmedabdullah/tinaconnector/blob/master/SETUP.md) directory.
 
 "bootstrap.sh" installs all dependencies required to prepeare job execution environment for TINA. Please note that TINA is installed in "/opt" directory. Following is the content of "bootstrap.sh" for TINA SC:    
@@ -42,12 +44,19 @@ The "main.sh" is a simple script that executes a shell script "run.sh" which mus
 #!/bin/sh
 
 INPUT_DIR=$1
+OUTPUT_DIR=$2
 
-sh $INPUT_DIR/run.sh $@
+cp run.sh $INPUT_DIR/run.sh
+
+RUN_DIR=`cd "$(dirname "$0")" && pwd`
+
+echo $RUN_DIR > mainsh.output
+
+sh $RUN_DIR/run.sh $@
 
 # --- EOF ---
 ```
-The "main.sh" executes "run.sh" which internally generated file based on "run.sh_template". The template filename must have "_template" suffix and need to be placed in the "Input Location" which is specified in "Create Job" tab of the Chiminey-Portal. Following is the content of "run.sh_template" that executes a given TINA job :
+The "main.sh" executes "run.sh". Following is the content of "run.sh" that executes a given TINA job :
 
 ```
 #!/bin/sh
@@ -59,23 +68,34 @@ find $INPUT_DIR -name '*.zip' -exec sh -c 'unzip -d `dirname {}` {}' ';'
 
 tina_exe=$(find /opt -name 'tina' 2>&1)
 
-$tina_exe {{param_string}} $INPUT_DIR/{{tina_model}} $OUTPUT_DIR/outfile $OUTPUT_DIR/digestfile $OUTPUT_DIR/errorfile
+cd $INPUT_DIR
+
+$tina_exe $(cat cli_parameters.txt) &> ../$OUTPUT_DIR/outfile ../$OUTPUT_DIR/digestfile ../$OUTPUT_DIR/errorfile
+
+
+cp ./*.txt ../$OUTPUT_DIR
 # --- EOF ---
 ```
-All the template tags specified in  the run.sh_template file will be internally replaced by Chiminey with corresponding values that are passed in from "Chiminey Portal" as Json dictionary. This "runs.sh_template" is  also renamed to "run.sh" with all template tags replaced with corresponding values. 
 
-"{{tina_model}}" is name of the tina model file loacated in the input directory, and "{{param_string}}" is the string with all various option that TINA allows for model-checking. For example let us assume following shell command is used to execute a TINA model "train.tpn":
+The "run.sh" takes in the payload parameter sweep values passed into a tina job through "cli_parameter.txt_template" file. The template filename with "_template" suffix need to be placed in the "Input Location" which is specified in "Create Job" tab of the Chiminey-Portal. Following is the content of "cli_parameter.txt_template" that contains the template tag :
 
+```
+{{cli_parameters}}
+```
+
+All the template tags specified in the cli_parameters.txt_template file will be internally replaced by Chiminey with corresponding values that are passed in from "Chiminey Portal" as Json dictionary. During job execution the template files such as "cli_parameter.txt_template" is mapped with appropiate "Payload parameter sweep" values. Files excluding the _template suffix i.e. "cli_parameter.txt" are created with all template tags replaced with appropiate sweep values specific to an individual TINA jor run. 
+
+Following command executes a TINA job:
 ```
 /opt/tina64-4.1.19/bin-Linux/verifyta -R -TPN -v -tc train.tpn 
 ```  
-So the "Internal sweep map", which is a JSON dictionary to be passed in from Chiminey-Portal's "Create Job" tab:
+
+Therefore to execute this job from Chiminey, the "Payload parameter sweep", which is a JSON dictionary to be passed in from Chiminey-Portal's "Create Job" tab:
 
 ```
-{ "tina_model" :  [ "train.tpn" ], "param_string" :  [ "-R -TPN -v -tc" ] }
-
+{ "cli_parameters" :  [ "train.tpn -R -TPN -v -tc" ] }
 ```
-Note that the "tina_model" and "param_string" are the tag names defined in the run.sh_template.
+Note that the "cli_parameters" is the tag name defined in the "cli_parameters.txt_template" template. This file need to be placed in the INPUT_DIR.
 
 The Input Directory
 -------------------
@@ -83,32 +103,29 @@ A connector in Chiminey system specifes a "Input Location" through "Create Job" 
 
 Configure, Create and Execute a TINA Job
 ------------------------------------------
-"Create Job" tab in "Chiminey Portal" lists "sweep_tina" form for creation and submission of tina job. "sweep_tina" form require definition of "Compute Resource Name" and "Storage Location". Appropiate "Compute Resource" and "Storage Resource" need to be defined  through "Settings" tab in the "Chiminey portal".
+"Create Job" tab in "Chiminey Portal" lists "tina" form for creation and submission of tina job. "tina" form require definition of "Compute Resource Name" and "Storage Location". Appropiate "Compute Resource" and "Storage Resource" need to be defined through "Settings" tab in the "Chiminey portal".
 
-External Sweep
---------------
-To perform external sweep "TINA Smart Connector" in Chiminey System, splecify appropiate JSON dictionary in "Values to sweep over" field  of the "sweep_tina" form accessible through Chiminey-Portal. An example JSON dictionary to perform external sweep for the "train.tpn" could be as following:
+Parameter Sweep
+---------------
+To perform parameter sweep on "TINA Smart Connector" jobs in Chiminey System, splecify appropiate JSON dictionary in "Payload parameter sweep" field  of the "tina" form accessible through Chiminey-Portal. An example JSON dictionary to perform sweep for the "train.tpn" could be as following:
 
 ```
-{ "tina_model" :  [ "train.tpn" ], "param_string" :  [ "-R -TPN -v -tc", "-C -TPN -v -tc", "-V -TPN -v -tc"] }
+{ "cli_parameters" :  [ "3trains.tpn -R -TPN -v -tc", "3trains.tpn -R -TPN -v -tc", "3trains.tpn -R -TPN -v -tc" ] }
 ``` 
 
 Above sweep map would create three individual process and one cloud VM will be allocated for each process.
 
 ```
-Number of VM instances : 1
-Minimum No. VMs : 1
-```
-Internal Sweep
---------------
-Inxternal sweep for "TINA Smart Connector" in Chiminey System may be performed by specifying appropiate JSON dictionary in "Internal sweep map" field  of the "sweep_tina" form. An example JSON dictionary to run internal sweep for the "train.tpn" could be as following:
 
-```
-{ "tina_model" :  [ "train.tpn" ], "param_string" :  [ "-R -TPN -v -tc", "-C -TPN -v -tc", "-V -TPN -v -tc"] }
-``` 
-Above would create three individual process. To allocate maximum two cloud VMs - thus execute two TINA job in the same VM,  input fields in "Cloud Compute Resource" for "sweep_tina" form has to be:
+In the "Cloud Compute Resouce" section, if we set following values 
+Number of VM instances : 3
+Minimum No. VMs : 3
 
+With above sweep map and Clould resource configurtion, three seperate VMs will be created in the Cloud where each VM will execute one tina job parallely.
+
+Furthermore, if we set the "Cloud Compute Resouce" configuration as following:
 ```
 Number of VM instances : 2
 Minimum No. VMs : 1
 ```
+For above setting, a maximum of two VMs will be created where one VM will execute two tina jobs and the other VM will execute one tina job. However, if VM quota availability is no more than one VM, only one VM will be created in the Cloud and all three tina jobs will be executed in the same VM sequetially.

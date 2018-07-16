@@ -80,7 +80,7 @@ class TinaInitial(CoreInitial):
                 django_settings.INPUT_FIELDS['input_location'],
                 django_settings.INPUT_FIELDS['output_location'],
                 django_settings.INPUT_FIELDS['tina'],
-                django_settings.INPUT_FIELDS['mytardis'],
+                #django_settings.INPUT_FIELDS['mytardis'],
                 ]
         return schemas
 
